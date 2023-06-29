@@ -57,6 +57,4 @@ for mvp purposes, the protocol is first developed as a single-chain hyperstructu
   - [ ] is it the job of the ui to verify that a sticker is saleable?
   - [ ] security?
 - [ ] shared 1155 contract
-  - [ ] redirect to mainnet renderer for tokenURI logic
-      - https://github.com/OpenZeppelin/cairo-contracts/discussions/28
 - [ ] vault contract that the storefront(?) can mint/burn from
