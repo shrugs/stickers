@@ -19,10 +19,7 @@ interface IsfrxETH {
 
     function decimals() external view returns (uint8);
 
-    function deposit(
-        uint256 assets,
-        address receiver
-    ) external returns (uint256 shares);
+    function deposit(uint256 assets, address receiver) external returns (uint256 shares);
 
     function depositWithSignature(
         uint256 assets,
@@ -32,7 +29,9 @@ interface IsfrxETH {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external returns (uint256 shares);
+    )
+        external
+        returns (uint256 shares);
 
     function lastRewardAmount() external view returns (uint192);
 
@@ -46,10 +45,7 @@ interface IsfrxETH {
 
     function maxWithdraw(address owner) external view returns (uint256);
 
-    function mint(
-        uint256 shares,
-        address receiver
-    ) external returns (uint256 assets);
+    function mint(uint256 shares, address receiver) external returns (uint256 assets);
 
     function name() external view returns (string memory);
 
@@ -63,7 +59,8 @@ interface IsfrxETH {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external;
+    )
+        external;
 
     function previewDeposit(uint256 assets) external view returns (uint256);
 
@@ -77,7 +74,9 @@ interface IsfrxETH {
         uint256 shares,
         address receiver,
         address owner
-    ) external returns (uint256 assets);
+    )
+        external
+        returns (uint256 assets);
 
     function rewardsCycleEnd() external view returns (uint32);
 
@@ -93,15 +92,13 @@ interface IsfrxETH {
 
     function transfer(address to, uint256 amount) external returns (bool);
 
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) external returns (bool);
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
 
     function withdraw(
         uint256 assets,
         address receiver,
         address owner
-    ) external returns (uint256 shares);
+    )
+        external
+        returns (uint256 shares);
 }

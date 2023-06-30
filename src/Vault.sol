@@ -8,10 +8,11 @@ import {frxETHMinter} from "./interfaces/frxETHMinter.sol";
 import {IsfrxETH} from "./interfaces/IsfrxETH.sol";
 
 /// @title Vault that backs stickers with frxETH
-/** @dev this vault should be owned by the Storefront, the contract with the authority to print
-    and burn stickers.
-
-    TODO: allow withdrawl of surplus frxETH to distributor/dao
+/**
+ * @dev this vault should be owned by the Storefront, the contract with the authority to print
+ *     and burn stickers.
+ *
+ *     TODO: allow withdrawl of surplus frxETH to distributor/dao
  */
 contract Vault is Owned {
     frxETHMinter public immutable $frxETHMinter;
@@ -29,7 +30,11 @@ contract Vault is Owned {
     function depositfrxETH(
         address from,
         uint256 amount
-    ) external onlyOwner returns (uint256 recieved) {
+    )
+        external
+        onlyOwner
+        returns (uint256 recieved)
+    {
         IERC20 frxETH = $frxETHMinter.frxETHToken();
         IsfrxETH sfrxETH = $frxETHMinter.sfrxETHToken();
 
@@ -49,10 +54,12 @@ contract Vault is Owned {
     function withdrawfrxETH(
         address recipient,
         uint256 amount
-    ) external onlyOwner returns (uint256 shares) {
+    )
+        external
+        onlyOwner
+        returns (uint256 shares)
+    {
         // prettier-ignore
-        return $frxETHMinter
-            .sfrxETHToken()
-            .withdraw(amount, recipient, address(this));
+        return $frxETHMinter.sfrxETHToken().withdraw(amount, recipient, address(this));
     }
 }

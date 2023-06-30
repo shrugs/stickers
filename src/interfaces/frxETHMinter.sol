@@ -9,7 +9,5 @@ interface frxETHMinter {
 
     function sfrxETHToken() external returns (IsfrxETH sfrxETH);
 
-    function submitAndDeposit(
-        address recipient
-    ) external payable returns (uint256 shares);
+    function submitAndDeposit(address recipient) external payable returns (uint256 shares);
 }

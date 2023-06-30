@@ -46,15 +46,53 @@ stickers have tiers of value, satisfying the requirement that users be able to c
 
 ### mvp
 
-for mvp purposes, the protocol is first developed as a single-chain hyperstructure. in the future cross-chain messaging and the dedicated OP Stack rollup can be employed
+for mvp purposes, the protocol is first developed as a single-chain hyperstructure. in the future cross-chain messaging and the dedicated OP Stack rollup can be integrated.
+
+in the split-chain future we want minting-related logic (gating, total supply, etc) to be on mainnet
+and we want display/trading (uri, royalty info, etc) logic available on the sidechain
 
 ## todo
 
+- [ ] implement sticker burning with 1155 transfer data
+- [ ] integrate with frxETH#permit along with standard allowances
+- [ ] StickerPrinter hooks w/ trycatch
 - [ ] storefront contract
   - [ ] hook-based logic for implementers
-  - [ ] CREATE2-style deterministic token ids? allows for counterfactual listings
+  - [x] CREATE2-style deterministic token ids? allows for counterfactual listings
   - [ ] unowned
   - [ ] is it the job of the ui to verify that a sticker is saleable?
   - [ ] security?
 - [ ] shared 1155 contract
 - [ ] vault contract that the storefront(?) can mint/burn from
+
+can we encode information into the tokenId? 256 bits = 32 bytes, addresses are 20 bytes
+so we have 12 left over. 1 for the tier, (really only 3 bits needed), then some space for the salt?
+
+the space allotted to an id is basically the max length of a pack? 24 bits = 16,777,216 which is more than enough
+
+so with this model tiers are managed by the protocol.
+one registers salt+printer (impl) with the protocol.
+ids are counterfactual — the protocol doesn't care, it just mints them
+
+printers, when asked for uri, will parse out the id and return metadata
+renderers will parse out tier to show status effects
+
+why is salt here? salt is here because we want to use the same printer for multiple packs
+
+artists deploy printer contracts to configure the style/logic of their stickers
+
+|  uint8 |   uint8  |  8 bytes  |  20 bytes | = 32 bytes
+|--------|----------|-----------|-----------|
+|  tier  |    id    |   salt    |  printer  |
+
+if we pack printer addresses into the token id we don't need the registry though, right?
+yeah users just say "mint me these ids" and the storefront goes "ok"
+
+so
+
+could i have stickers be their own contracts? need to enforce minting rights, basically
+the invariant i want to enforce is that for every sticker minted, FEE frxETH ends up in a vault and staked
+so we want contracts to opt-in to say "i am a sticker" but also we need to enforce that invariant
+this feels stressful because we can't trust external code to do expected things.
+seems easier to use the hook
+
