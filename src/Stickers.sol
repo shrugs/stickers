@@ -14,19 +14,13 @@ import {StickerLib} from "./StickerLib.sol";
 contract Stickers is ERC1155, Owned {
     constructor() Owned(msg.sender) {}
 
-    function mint(
-        address to,
-        uint256[] memory ids,
-        uint256[] memory amounts
-    ) external onlyOwner {
+    function mint(address to, uint256[] memory ids, uint256[] memory amounts) external onlyOwner {
         return _batchMint(to, ids, amounts, "");
     }
 
-    function uri(
-        uint256 tokenId
-    ) public view virtual override returns (string memory) {
+    function uri(uint256 tokenId) public view virtual override returns (string memory) {
         // TODO: unpack id, call uri on printer
-        (, uint8 id, , address printer) = StickerLib.peel(tokenId);
+        (, uint8 id,, address printer) = StickerLib.peel(tokenId);
         // TODO: trycatch
         return IStickerPrinter(printer).uri(id);
     }

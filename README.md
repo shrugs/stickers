@@ -2,15 +2,17 @@
 
 > print digital stickers, imbue them with value, and trade them across the web
 
-the sticker protocol is a public good and fully permissionless and open hyperstructure for selling, printing, trading, and redeeming digital stickers.
+the sticker protocol is a public good and fully permissionless and open hyperstructure for selling, printing, trading, and redeeming digital stickers backed by frxETH.
 
 ## welcome to DeFi Sticker.0
 
 the sticker protocol eliminates [the mental transaction costs](https://nakamotoinstitute.org/micropayments-and-mental-transaction-costs/) of moving money on the internet — social micropayments are back, baby, and they're cooler than ever.
 
+stickers are an adhesive art form, a unique medium of creativity and expression that helps the p2p social web stick together.
+
 ## protocol overview
 
-a sticker is an individual ERC1155 NFT living on a dedicated OP Stack rollup in which transfers and trades are fully subsidized and account-abstracted. stickers, upon minting, are fully backed by mainnet frxETH, which is staked for risk-free yield. upon burning a sticker on the rollup, the backing mainnet frxETH is unstaked and returned.
+a sticker is an individual edition of an ERC1155 NFT living on a dedicated OP Stack rollup in which transfers and trades are fully subsidized and account-abstracted. stickers, upon minting, are fully backed by mainnet frxETH, which is staked for risk-free yield. upon burning a sticker on the rollup, the backing mainnet frxETH is unstaked and returned.
 
 as users react to their friends or creators around the web, the sticker NFTs are _transferred_, sending both meaning and money to another.
 
@@ -43,6 +45,14 @@ stickers have tiers of value, satisfying the requirement that users be able to c
 | Legendary | Orange | 1 | $2000 |
 
 ([modeled after Blizzard rarity tiers](https://wowpedia.fandom.com/wiki/Quality))
+
+### Stick Together, The DAO
+
+
+
+### subsidized transactions
+
+the Sticker chain is operated by StickTogether, which is a paymaster for known transaction types on the
 
 ### mvp
 

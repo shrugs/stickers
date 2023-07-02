@@ -10,23 +10,30 @@ import {IsfrxETH} from "./interfaces/IsfrxETH.sol";
 /// @title Vault that backs stickers with frxETH
 /**
  * @dev this vault should be owned by the Storefront, the contract with the authority to print
- *     and burn stickers.
- *
- *     TODO: allow withdrawl of surplus frxETH to distributor/dao
+ * and burn stickers.
  */
 contract Vault is Owned {
     frxETHMinter public immutable $frxETHMinter;
 
-    uint256 public totalReserve;
+    // TODO: allow withdrawl of surplus frxETH to distributor/dao by tracking reserve
+    uint256 public $reserve;
+
+    error WouldReduceReserve(uint256 expected, uint256 actual);
 
     constructor(frxETHMinter minter) Owned(msg.sender) {
         $frxETHMinter = minter;
     }
 
     function depositETH() external payable onlyOwner returns (uint256 shares) {
-        return $frxETHMinter.submitAndDeposit(address(this));
+        shares = $frxETHMinter.submitAndDeposit{value: msg.value}(address(this));
+        unchecked {
+            $reserve += msg.value;
+        }
+
+        _invariant();
     }
 
+    /// @dev deposit a specific amount of frxETH from `source` into sfrxETH
     function depositfrxETH(
         address from,
         uint256 amount
@@ -41,7 +48,7 @@ contract Vault is Owned {
         // allow the minter to take our frxETH
         frxETH.approve(address($frxETHMinter), amount);
 
-        // get the frxETH from the printer
+        // get the frxETH from the source
         frxETH.transferFrom(from, address(this), amount);
 
         // deposit
@@ -49,8 +56,15 @@ contract Vault is Owned {
         recieved = sfrxETH.deposit(amount, address(this));
         // TODO: why this this check required?
         require(recieved > 0, "No sfrxETH was returned");
+
+        unchecked {
+            $reserve += amount;
+        }
+
+        _invariant();
     }
 
+    /// @dev withdraw a specific amount of frxETH from sfrxETH
     function withdrawfrxETH(
         address recipient,
         uint256 amount
@@ -59,7 +73,31 @@ contract Vault is Owned {
         onlyOwner
         returns (uint256 shares)
     {
-        // prettier-ignore
-        return $frxETHMinter.sfrxETHToken().withdraw(amount, recipient, address(this));
+        // forgefmt: disable-next-item
+        shares = $frxETHMinter
+            .sfrxETHToken()
+            .withdraw(amount, recipient, address(this));
+
+        // TODO: make sure this can't underflow somehow?
+        // could this contract own sfrxETH that it hasn't accounted for?
+        unchecked {
+            $reserve -= amount;
+        }
+
+        _invariant();
+    }
+
+    function _invariant() internal {
+        // the vault invariant is that it can always redeem at least $reserve assets
+        IsfrxETH sfrxETH = $frxETHMinter.sfrxETHToken();
+        uint256 redeemable = sfrxETH.previewRedeem(sfrxETH.balanceOf(address(this)));
+
+        if ($reserve < redeemable) return; // in the money
+
+        // we can redeem fewer assets than we expect, but let's just see if it's a rounding error
+        // redeemable assets are calculated with a mulDivDown, so this invariant needs to allow
+        // for a small rounding error
+        uint256 delta = $reserve - redeemable; // cannot underflow because $reserve >= redeemable
+        if (delta > 1) revert WouldReduceReserve($reserve, redeemable);
     }
 }

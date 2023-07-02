@@ -2,9 +2,11 @@
 pragma solidity ^0.8.20;
 
 library StickerLib {
-    function peel(
-        uint256 tokenId
-    ) public pure returns (uint8 tier, uint8 id, bytes8 salt, address printer) {
+    function peel(uint256 tokenId)
+        public
+        pure
+        returns (uint8 tier, uint8 id, bytes8 salt, address printer)
+    {
         // forgefmt: disable-next-item
         return (
             uint8(tokenId),
@@ -19,7 +21,11 @@ library StickerLib {
         uint8 id,
         bytes8 salt,
         address printer
-    ) public pure returns (uint256 tokenId) {
+    )
+        public
+        pure
+        returns (uint256 tokenId)
+    {
         // forgefmt: disable-next-item
         return
             uint256(tier) |

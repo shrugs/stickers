@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 
 import {StickerLib} from "../src/StickerLib.sol";
 
-contract CitiTest is Test {
+contract StickerLibTest is Test {
     function test_zeros() public {
         _assertPeel(0, 0, 0, 0, address(0));
     }
@@ -36,9 +36,10 @@ contract CitiTest is Test {
         uint8 id,
         bytes8 salt,
         address printer
-    ) internal {
-        (uint8 _tier, uint8 _id, bytes8 _salt, address _printer) = StickerLib
-            .peel(tokenId);
+    )
+        internal
+    {
+        (uint8 _tier, uint8 _id, bytes8 _salt, address _printer) = StickerLib.peel(tokenId);
         assertEq(_tier, tier);
         assertEq(_id, id);
         assertEq(_salt, salt);
