@@ -26,6 +26,7 @@ contract Vault is Owned {
 
     function depositETH() external payable onlyOwner returns (uint256 shares) {
         shares = $frxETHMinter.submitAndDeposit{value: msg.value}(address(this));
+
         unchecked {
             $reserve += msg.value;
         }
@@ -55,6 +56,7 @@ contract Vault is Owned {
         frxETH.approve(address(sfrxETH), amount);
         recieved = sfrxETH.deposit(amount, address(this));
         // TODO: why this this check required?
+        // https://github.com/FraxFinance/frxETH-public/blob/master/src/frxETHMinter.sol#L79
         require(recieved > 0, "No sfrxETH was returned");
 
         unchecked {
@@ -97,6 +99,7 @@ contract Vault is Owned {
         // we can redeem fewer assets than we expect, but let's just see if it's a rounding error
         // redeemable assets are calculated with a mulDivDown, so this invariant needs to allow
         // for a small rounding error
+        // TODO: see if this rounding error increases depending on how much is locked, or time or something
         uint256 delta = $reserve - redeemable; // cannot underflow because $reserve >= redeemable
         if (delta > 1) revert WouldReduceReserve($reserve, redeemable);
     }

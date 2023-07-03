@@ -48,6 +48,12 @@ stickers have tiers of value, satisfying the requirement that users be able to c
 
 ### Stick Together, The DAO
 
+main question: how to automatically direct yield from vault?
+if not possible to be done automatically, need to inject some humans :(
+
+- retroactive subsidization of integrations
+- retroactive subsidization
+- proactive grant distribution, nouns-style
 
 
 ### subsidized transactions
@@ -64,6 +70,14 @@ and we want display/trading (uri, royalty info, etc) logic available on the side
 ## todo
 
 - [ ] implement sticker burning with 1155 transfer data
+- [ ] optimize storage slots / variable sizing
+- [ ] use a static delegate call to perform sticker logics? only if we never need a hook to persist state.
+  - https://github.com/dragonfly-xyz/useful-solidity-patterns/tree/main/patterns/readonly-delegatecall#read-only-delegatecall
+  - https://github.com/PartyDAO/party-protocol/blob/71714262eb59daeac06e561d03d05f3c5178e9d8/contracts/crowdfund/CrowdfundNFT.sol#L104
+- [ ] test permit
+  - https://book.getfoundry.sh/tutorials/testing-eip712
+- [ ] include a totalSupply per tokenId
+  - [ ] could use the read only delegate idea to optionally get a maxSupply from impl contract allowing for 1/1 specifications
 - [ ] integrate with frxETH#permit along with standard allowances
 - [ ] StickerPrinter hooks w/ trycatch
 - [ ] storefront contract
