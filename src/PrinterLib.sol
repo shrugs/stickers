@@ -7,7 +7,7 @@ import {IPrinter} from "./interfaces/IPrinter.sol";
 library PrinterLib {
     using ERC165Checker for address;
 
-    function shouldCallonBeforePrint(address printer) public view returns (bool) {
+    function shouldCallOnBeforePrint(address printer) public view returns (bool) {
         return printer.supportsInterface(IPrinter.onBeforePrint.selector);
     }
 

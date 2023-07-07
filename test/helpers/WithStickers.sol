@@ -8,17 +8,15 @@ import {Storefront} from "../../src/Storefront.sol";
 import {Stickers} from "../../src/Stickers.sol";
 import {Vault} from "../../src/Vault.sol";
 
-import {MockPrinter} from "../../src/mocks/MockPrinter.sol";
+import {MinimalPrinter} from "../../src/examples/MinimalPrinter.sol";
 
 import {IPrinter} from "../../src/interfaces/IPrinter.sol";
 import {frxETHMinter} from "../../src/interfaces/frxETHMinter.sol";
 
 abstract contract WithStickers is Test {
-    address internal ARTIST = address(69);
-    uint8 internal MAX_STICKER_ID = 25;
-    bytes8 internal VALID_SALT = "pack";
+    address internal ARTIST = address(0xdeaf);
 
-    IPrinter internal printer = new MockPrinter(ARTIST, MAX_STICKER_ID, VALID_SALT);
+    IPrinter internal MINIMAL_PRINTER = new MinimalPrinter(ARTIST);
     frxETHMinter internal MAINNET_MINTER = frxETHMinter(0xbAFA44EFE7901E04E39Dad13167D089C559c1138);
 
     Storefront internal storefront;
@@ -31,14 +29,9 @@ abstract contract WithStickers is Test {
         vault = storefront.$vault();
     }
 
-    /// @notice generates a tokenId with a tier and id
-    function _id(uint8 tier, uint8 id) internal view returns (uint256) {
-        return StickerLib.attach(tier, id, VALID_SALT, address(printer));
-    }
-
-    /// @notice generates a tokenId with a tier
+    /// @notice generates a tokenId with a specified tier and
     function _tier(uint8 tier) internal view returns (uint256) {
-        return StickerLib.attach(tier, 0, VALID_SALT, address(printer));
+        return StickerLib.attach(tier, 1, "salt", address(MINIMAL_PRINTER));
     }
 
     function _print(
@@ -52,9 +45,35 @@ abstract contract WithStickers is Test {
     {
         (total, deposit, primarySaleAmount) =
             storefront.validateAndCalculatePrintingCost(ids, amounts);
-        vm.deal(to, total);
+        _printWithValue(to, ids, amounts, data, total);
+    }
+
+    function _printWithValue(
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data,
+        uint256 value
+    )
+        internal
+    {
+        vm.deal(to, value);
         vm.prank(to);
-        storefront.print{value: total}(ids, amounts, data);
+        storefront.print{value: value}(ids, amounts, data);
+    }
+
+    function _assertCannotPrint(
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data,
+        bytes4 selector
+    )
+        internal
+    {
+        (uint256 total,,) = storefront.validateAndCalculatePrintingCost(ids, amounts);
+        vm.expectRevert(selector);
+        _printWithValue(to, ids, amounts, data, total);
     }
 
     function _assertVaultReserve(uint256 amount) internal {

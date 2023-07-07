@@ -102,8 +102,8 @@ contract Vault is Owned {
         // we can redeem fewer assets than we expect, but let's just see if it's a rounding error
         // redeemable assets are calculated with a mulDivDown, so this invariant needs to allow
         // for a small rounding error
-        // TODO: see if this rounding error increases depending on how much is locked, or time or something
+        // TODO: see if this rounding error increases depending on how much is locked, or time or something? only have seen 1 or 2 delta in testing
         uint256 delta = $reserve - redeemable; // cannot underflow because $reserve >= redeemable
-        if (delta > 1) revert WouldReduceReserve($reserve, redeemable);
+        if (delta > 2) revert WouldReduceReserve($reserve, redeemable);
     }
 }

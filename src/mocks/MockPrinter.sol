@@ -9,15 +9,18 @@ import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 import {IPrinter} from "../interfaces/IPrinter.sol";
 
 contract MockPrinter is BasePrinter {
-    error InvalidSalt();
+    error InvalidTier();
     error InvalidId();
+    error InvalidSalt();
 
     address public immutable ARTIST;
-    uint256 public immutable MAX_ID;
+    uint8 public immutable MAX_TIER;
+    uint8 public immutable MAX_ID;
     bytes8 public immutable SALT;
 
-    constructor(address artist, uint8 maxId, bytes8 salt) {
+    constructor(address artist, uint8 maxTier, uint8 maxId, bytes8 salt) {
         ARTIST = artist;
+        MAX_TIER = maxTier;
         MAX_ID = maxId;
         SALT = salt;
     }
@@ -33,11 +36,17 @@ contract MockPrinter is BasePrinter {
         override
         returns (bytes4)
     {
-        // require that salt matches what we're able to mint
         for (uint256 i = 0; i < ids.length; i++) {
-            (, uint8 id, bytes8 salt,) = StickerLib.peel(ids[i]);
-            if (salt != SALT) revert InvalidSalt();
+            (uint8 tier, uint8 id, bytes8 salt,) = StickerLib.peel(ids[i]);
+
+            // require that tier is in range we support
+            if (tier > MAX_TIER) revert InvalidTier();
+
+            // require that id is in range we support
             if (id > MAX_ID) revert InvalidId();
+
+            // require that salt matches what we're able to mint
+            if (salt != SALT) revert InvalidSalt();
         }
 
         return IPrinter.onBeforePrint.selector;
@@ -76,9 +85,6 @@ contract MockPrinter is BasePrinter {
         );
     }
 
-    /**
-     * @dev See {IERC165-supportsInterface}.
-     */
     function supportsInterface(bytes4 interfaceId)
         public
         view

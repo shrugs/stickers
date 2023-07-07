@@ -7,31 +7,40 @@ import {MerklePrinter} from "../src/examples/MerklePrinter.sol";
 import {WithStickers} from "./helpers/WithStickers.sol";
 import {StickerLib} from "../src/StickerLib.sol";
 
-// TODO: catch NotImplemented for primarySaleInfo or royaltyInfo
+import {Merkle} from "murky/Merkle.sol";
+
 contract MerklePrinterTest is Test, WithStickers {
-    bytes32 ROOT = 0x02f70126543d894063566c3182d6d4a43a30d449e07e08ecdb786a52e6553597;
-    address VALID = 0xC05D9575553dFf48e8b903852B98538a92729bb3;
-    address INVALID = address(69);
-
-    bytes32[] VALID_PROOF = [
-        0x805dd5bb08e4b1ee0085bcb5f01097a764f935ea93acfddc5bd189634f963459,
-        0xc2064123568ea31934a918492b330fb69b13364fc726a6570f80e51ba1a987c3,
-        0x4c704c66be5c4e3b852b3bc66022e5cb56580ebde89ef1ff260722e52ecfb431,
-        0xc915273b5c0fdc36e7498f7c9111bfddf22c330ca98370fdaf28536aa8fabe1c
-    ];
-
     MerklePrinter merklePrinter;
 
-    uint256[] ids = [StickerLib.attach(0, 0, 0, address(merklePrinter))];
+    bytes32[] proof;
+    uint256[] ids;
     uint256[] amounts = [1];
 
     function setUp() public override {
-        merklePrinter = new MerklePrinter(ROOT);
         super.setUp();
+
+        Merkle m = new Merkle();
+        bytes32[] memory data = new bytes32[](4);
+        data[0] = keccak256(abi.encodePacked(address(1)));
+        data[1] = keccak256(abi.encodePacked(address(2)));
+        data[2] = keccak256(abi.encodePacked(address(3)));
+        data[3] = keccak256(abi.encodePacked(address(4)));
+
+        bytes32 root = m.getRoot(data);
+        proof = m.getProof(data, 0);
+
+        merklePrinter = new MerklePrinter(root);
+        ids = [StickerLib.attach(0, 1, 0, address(merklePrinter))];
     }
 
-    function test_validProof() public {
-        _print(address(1), ids, amounts, abi.encode(VALID_PROOF));
-        assertEq(stickers.balanceOf(address(1), 0), 1);
+    function test_canPrintValidProof() public {
+        _print(address(1), ids, amounts, abi.encode(proof));
+        assertEq(stickers.balanceOf(address(1), ids[0]), 1);
+    }
+
+    function test_cannotPrintInvalidProof() public {
+        (uint256 total,,) = storefront.validateAndCalculatePrintingCost(ids, amounts);
+        vm.expectRevert(MerklePrinter.InvalidProof.selector);
+        _printWithValue(address(2), ids, amounts, abi.encode(proof), total);
     }
 }

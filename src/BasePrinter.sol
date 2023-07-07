@@ -4,36 +4,39 @@ pragma solidity ^0.8.20;
 import {IPrinter, IERC165} from "./interfaces/IPrinter.sol";
 import {ERC165} from "openzeppelin/utils/introspection/ERC165.sol";
 
+/**
+ * @notice helpful base contract for Printers
+ * @dev BasePrinter implements:
+ *  - supportsInterface for IPrinter
+ *  - stubs for hooks
+ *
+ * Inheritors implement:
+ * - uri
+ * - primarySaleInfo
+ * - royaltyInfo
+ * - hooks (enable by supportsInterface(IPrinter.[hook].selector))
+ */
 abstract contract BasePrinter is IPrinter, ERC165 {
-    // error NotImplemented();
+    error NotImplemented();
 
-    // function onBeforePrint(
-    //     address to,
-    //     uint256[] calldata ids,
-    //     uint256[] calldata amounts,
-    //     bytes calldata data
-    // )
-    //     external
-    //     view
-    //     virtual
-    //     override
-    //     returns (bytes4)
-    // {
-    //     ids;
-    //     amounts;
-    //     to;
-    //     data;
+    function onBeforePrint(
+        address to,
+        uint256[] calldata ids,
+        uint256[] calldata amounts,
+        bytes calldata data
+    )
+        external
+        view
+        virtual
+        returns (bytes4)
+    {
+        ids;
+        amounts;
+        to;
+        data;
 
-    //     revert NotImplemented();
-    // }
-
-    // function uri(uint256 tokenId) external view virtual returns (string memory) {
-    //     tokenId;
-
-    //     // (uint8 tier, uint8 id, bytes8 salt,) = StickerLib.peel(tokenId);
-    //     // return uri for `id` in `salt` optionally affected by `tier`
-    //     revert NotImplemented();
-    // }
+        revert NotImplemented();
+    }
 
     // function primarySaleInfo(
     //     uint256[] memory ids,

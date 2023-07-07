@@ -30,7 +30,7 @@ contract Stickers is ERC1155, Owned {
         // printer is guaranteed to be identical for all tokenIds
         (,,, address printer) = StickerLib.peel(ids[0]);
 
-        if (PrinterLib.shouldCallonBeforePrint(printer)) {
+        if (PrinterLib.shouldCallOnBeforePrint(printer)) {
             if (
                 IPrinter(printer).onBeforePrint(to, ids, amounts, data)
                     != IPrinter.onBeforePrint.selector

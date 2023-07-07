@@ -96,6 +96,7 @@ v1.0 — cross-chain messaging & dedicated OP Stack operated by Stick Together w
 
 ## todo
 
+- [ ] write example printers from BasePrinter
 - [ ] implement sticker burning with 1155 transfer data
 - [ ] optimize storage slots / variable sizing
 - [ ] use a static delegate call to perform sticker logics? only if we never need a hook to persist state.
