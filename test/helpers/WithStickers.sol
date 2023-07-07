@@ -42,7 +42,7 @@ abstract contract WithStickers is Test {
     }
 
     function _print(
-        address from,
+        address to,
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
@@ -52,8 +52,8 @@ abstract contract WithStickers is Test {
     {
         (total, deposit, primarySaleAmount) =
             storefront.validateAndCalculatePrintingCost(ids, amounts);
-        vm.deal(from, total);
-        vm.prank(from);
+        vm.deal(to, total);
+        vm.prank(to);
         storefront.print{value: total}(ids, amounts, data);
     }
 
