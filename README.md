@@ -32,6 +32,19 @@ users print a sticker pack by providing the backing (frx)ETH, along with the art
 
 ex: to mint a pack of 10 stickers backed by 0.0001 ETH each, the user pays 0.0012 (frx)ETH. 0.0002 frxETH goes directly to the artist, and each minted sticker is imbued with 0.0001 frxETH.
 
+tokenIds are deterministic by implementation — we pack the following information into a tokenId:
+
+| uint8 | uint8 | 8 bytes | 20 bytes |
+|---|---|---|---|
+| tier | id | salt | printer |
+| | | | = 32 bytes |
+
+using this model, an artist defines a pack of stickers by providing a `salt` and `printer` contract.
+
+the purpose of the salt is to support multiple packs of stickers with a single `printer` implementation.
+
+because `id` is a `uint8`, the maximum number of unique sticker designs in any one given pack is `256`.
+
 ### sticker tiers
 
 stickers have tiers of value, satisfying the requirement that users be able to contribute a lot of value in a single sticker interaction
@@ -46,6 +59,20 @@ stickers have tiers of value, satisfying the requirement that users be able to c
 
 ([modeled after Blizzard rarity tiers](https://wowpedia.fandom.com/wiki/Quality))
 
+### sticker printers
+
+sticker printers are sticker implementation contracts, primarily responsible for defining the additional behavior and display of a sticker, as well as secondary sale royalties.
+
+sticker printers abide by the following interfaces
+- `IERC1155MetadataURI` — (`uri(...)`)
+- `IERC2981` — (`royaltyInfo(...)`)
+- `IPrinter` — hooks for defining sticker behavior
+
+```solidity
+TODO: IPrinter interface here
+```
+
+
 ### Stick Together, The DAO
 
 main question: how to automatically direct yield from vault?
@@ -54,18 +81,18 @@ if not possible to be done automatically, need to inject some humans :(
 - retroactive subsidization of integrations
 - retroactive subsidization
 - proactive grant distribution, nouns-style
+- veTokenomics w/ guage voting to redirect vault yield per-epoch
 
 
 ### subsidized transactions
 
-the Sticker chain is operated by StickTogether, which is a paymaster for known transaction types on the
+the Sticker chain is operated by Stick Together, which is a paymaster for known transaction types on the OP chain, effectively providing free transactions for all sticker-related operations, especially transfers and distributions.
 
 ### mvp
 
-for mvp purposes, the protocol is first developed as a single-chain hyperstructure. in the future cross-chain messaging and the dedicated OP Stack rollup can be integrated.
+v0.1 — the protocol is first developed as a single-chain hyperstructure
 
-in the split-chain future we want minting-related logic (gating, total supply, etc) to be on mainnet
-and we want display/trading (uri, royalty info, etc) logic available on the sidechain
+v1.0 — cross-chain messaging & dedicated OP Stack operated by Stick Together w/ account-abstracted subsidized txs
 
 ## todo
 
@@ -88,6 +115,7 @@ and we want display/trading (uri, royalty info, etc) logic available on the side
   - [ ] security?
 - [ ] shared 1155 contract
 - [ ] vault contract that the storefront(?) can mint/burn from
+- [ ] in the split-chain future we want minting-related logic (gating, total supply, etc) to be on mainnet and we want display/trading (uri, royalty info, etc) logic available on the sidechain
 
 can we encode information into the tokenId? 256 bits = 32 bytes, addresses are 20 bytes
 so we have 12 left over. 1 for the tier, (really only 3 bits needed), then some space for the salt?
@@ -101,13 +129,11 @@ ids are counterfactual — the protocol doesn't care, it just mints them
 printers, when asked for uri, will parse out the id and return metadata
 renderers will parse out tier to show status effects
 
-why is salt here? salt is here because we want to use the same printer for multiple packs
+why is salt here? salt is here because we may want to use the same printer for multiple packs
 
 artists deploy printer contracts to configure the style/logic of their stickers
 
-|  uint8 |   uint8  |  8 bytes  |  20 bytes | = 32 bytes
-|--------|----------|-----------|-----------|
-|  tier  |    id    |   salt    |  printer  |
+
 
 if we pack printer addresses into the token id we don't need the registry though, right?
 yeah users just say "mint me these ids" and the storefront goes "ok"
@@ -118,5 +144,4 @@ could i have stickers be their own contracts? need to enforce minting rights, ba
 the invariant i want to enforce is that for every sticker minted, FEE frxETH ends up in a vault and staked
 so we want contracts to opt-in to say "i am a sticker" but also we need to enforce that invariant
 this feels stressful because we can't trust external code to do expected things.
-seems easier to use the hook
-
+seems easier to use the hook. how does uniswap ensure that it's working with erc20s that do what it expects?

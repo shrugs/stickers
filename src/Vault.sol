@@ -7,15 +7,18 @@ import {Owned} from "solmate/auth/Owned.sol";
 import {frxETHMinter} from "./interfaces/frxETHMinter.sol";
 import {IsfrxETH} from "./interfaces/IsfrxETH.sol";
 
-/// @title Vault that backs stickers with frxETH
 /**
+ * @title Vault
+ * @notice backs stickers with frxETH
  * @dev this vault should be owned by the Storefront, the contract with the authority to print
- * and burn stickers.
+ * and burn stickers. It tracks its own $reserve of backing assets (frxETH) and enforces it with
+ * an _invariant per-interaction.
  */
 contract Vault is Owned {
     frxETHMinter public immutable $frxETHMinter;
 
     // TODO: allow withdrawl of surplus frxETH to distributor/dao by tracking reserve
+    // TODO: align epochs w/ CRV?
     uint256 public $reserve;
 
     error WouldReduceReserve(uint256 expected, uint256 actual);

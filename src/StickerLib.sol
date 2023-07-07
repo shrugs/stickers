@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 library StickerLib {
+    /// @notice separate `tokenId` into `tier`, `id`, `salt`, and `printer`
     function peel(uint256 tokenId)
         public
         pure
@@ -16,6 +17,7 @@ library StickerLib {
         );
     }
 
+    /// @notice combine `tier`, `id`, `salt`, and `printer` into `tokenId`
     function attach(
         uint8 tier,
         uint8 id,

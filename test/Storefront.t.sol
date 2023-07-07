@@ -22,7 +22,9 @@ contract StorefrontTest is Test, WithStickers {
     }
 
     function test_printingExample() public {
-        uint256 amount = _print(minter, EXAMPLE_IDS, EXAMPLE_AMOUNTS, "");
+        uint256 artistPrevBalance = ARTIST.balance;
+        (, uint256 deposit, uint256 primarySaleAmount) =
+            _print(minter, EXAMPLE_IDS, EXAMPLE_AMOUNTS, "");
 
         // the minter should have ids and amounts
         for (uint256 i = 0; i < EXAMPLE_IDS.length; i++) {
@@ -30,7 +32,10 @@ contract StorefrontTest is Test, WithStickers {
             assertEq(balance, EXAMPLE_AMOUNTS[i]);
         }
 
-        _assertVaultReserve(amount);
+        _assertVaultReserve(deposit);
+
+        // artist received correct sale amount
+        assertEq(stdMath.delta(artistPrevBalance, ARTIST.balance), primarySaleAmount);
     }
 
     function test_printingMany() public {
@@ -40,7 +45,7 @@ contract StorefrontTest is Test, WithStickers {
         uint256[] memory _amounts = new uint256[](1);
         _amounts[0] = 100_000;
 
-        uint256 amount = _print(minter, _ids, _amounts, "");
-        _assertVaultReserve(amount);
+        (, uint256 deposit,) = _print(minter, _ids, _amounts, "");
+        _assertVaultReserve(deposit);
     }
 }

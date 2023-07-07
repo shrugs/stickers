@@ -8,14 +8,22 @@ import {Storefront} from "../../src/Storefront.sol";
 import {Stickers} from "../../src/Stickers.sol";
 import {Vault} from "../../src/Vault.sol";
 
+import {MockPrinter} from "../../src/mocks/MockPrinter.sol";
+
+import {IPrinter} from "../../src/interfaces/IPrinter.sol";
 import {frxETHMinter} from "../../src/interfaces/frxETHMinter.sol";
 
 abstract contract WithStickers is Test {
-    frxETHMinter public MAINNET_MINTER = frxETHMinter(0xbAFA44EFE7901E04E39Dad13167D089C559c1138);
+    address internal ARTIST = address(69);
+    uint8 internal MAX_STICKER_ID = 25;
+    bytes8 internal VALID_SALT = "pack";
 
-    Storefront storefront;
-    Vault vault;
-    Stickers stickers;
+    IPrinter internal printer = new MockPrinter(ARTIST, MAX_STICKER_ID, VALID_SALT);
+    frxETHMinter internal MAINNET_MINTER = frxETHMinter(0xbAFA44EFE7901E04E39Dad13167D089C559c1138);
+
+    Storefront internal storefront;
+    Vault internal vault;
+    Stickers internal stickers;
 
     function setUp() public virtual {
         storefront = new Storefront(MAINNET_MINTER);
@@ -23,8 +31,14 @@ abstract contract WithStickers is Test {
         vault = storefront.$vault();
     }
 
-    function _tier(uint8 tier) internal pure returns (uint256) {
-        return StickerLib.attach(tier, 0, 0, address(0));
+    /// @notice generates a tokenId with a tier and id
+    function _id(uint8 tier, uint8 id) internal view returns (uint256) {
+        return StickerLib.attach(tier, id, VALID_SALT, address(printer));
+    }
+
+    /// @notice generates a tokenId with a tier
+    function _tier(uint8 tier) internal view returns (uint256) {
+        return StickerLib.attach(tier, 0, VALID_SALT, address(printer));
     }
 
     function _print(
@@ -34,12 +48,13 @@ abstract contract WithStickers is Test {
         bytes memory data
     )
         internal
-        returns (uint256 amount)
+        returns (uint256 total, uint256 deposit, uint256 primarySaleAmount)
     {
-        (amount,) = storefront.validateAndCalculateDeposit(ids, amounts);
-        vm.deal(from, amount);
+        (total, deposit, primarySaleAmount) =
+            storefront.validateAndCalculatePrintingCost(ids, amounts);
+        vm.deal(from, total);
         vm.prank(from);
-        storefront.print{value: amount}(ids, amounts, data);
+        storefront.print{value: total}(ids, amounts, data);
     }
 
     function _assertVaultReserve(uint256 amount) internal {
@@ -56,7 +71,8 @@ abstract contract WithStickers is Test {
         );
     }
 
-    /// @dev simulates staking rewards by depositing some frxETH and fast-forwarding to the end of the reward cycle
+    /// @dev simulates staking rewards by depositing some frxETH and fast-forwarding to
+    /// the end of the reward cycle
     function _simulateStakingRewards() internal {
         deal(address(MAINNET_MINTER.frxETHToken()), address(MAINNET_MINTER.sfrxETHToken()), 1 ether);
         vm.warp(MAINNET_MINTER.sfrxETHToken().rewardsCycleEnd());
