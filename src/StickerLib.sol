@@ -18,7 +18,7 @@ library StickerLib {
     }
 
     /// @notice combine `tier`, `id`, `salt`, and `printer` into `tokenId`
-    function attach(
+    function press(
         uint8 tier,
         uint8 id,
         bytes8 salt,

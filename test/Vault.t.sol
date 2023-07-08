@@ -18,8 +18,8 @@ contract VaultTest is Test, WithStickers {
     function test_stakingReward() public {
         _print(address(1), EXAMPLE_IDS, EXAMPLE_AMOUNTS, "");
 
-        uint256 prev = _frxETHBalanceOf(address(vault));
+        uint256 prev = _redeemablefrxETHOf(address(vault));
         _simulateStakingRewards();
-        assertGt(_frxETHBalanceOf(address(vault)), prev);
+        assertGt(_redeemablefrxETHOf(address(vault)), prev);
     }
 }

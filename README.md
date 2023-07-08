@@ -109,11 +109,13 @@ with the split-chain v1.0, minting-related logic (gating, total supply, etc) wil
 
 ## todo
 
+- [ ] throw reentrancy guard on Storefront?
+- [ ] replace msg.sender argument with a `from` argument in `Storefront#print(...)`?
 - [ ] onAfterBurn
   - example max supply printer that uses onBeforeMint and onAfterBurn to calculate max supply
   - example printer that uses max supply to charge incrementing amounts per-sticker
     - use LSSVM's Curve contracts?
-- [ ] implement sticker burning (with 1155 transfer data?)
+- [ ] implement sticker burning
 - [ ] optimize storage slots / variable sizing
 - [ ] security pass
 - [ ] use a static delegate call to perform sticker logics? only if we never need a hook to persist state.

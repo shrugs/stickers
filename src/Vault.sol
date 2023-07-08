@@ -27,8 +27,8 @@ contract Vault is Owned {
         $frxETHMinter = minter;
     }
 
-    function depositETH() external payable onlyOwner returns (uint256 shares) {
-        shares = $frxETHMinter.submitAndDeposit{value: msg.value}(address(this));
+    function depositETH() external payable onlyOwner {
+        $frxETHMinter.submitAndDeposit{value: msg.value}(address(this));
 
         unchecked {
             $reserve += msg.value;
@@ -38,14 +38,7 @@ contract Vault is Owned {
     }
 
     /// @dev deposit a specific amount of frxETH from `source` into sfrxETH
-    function depositfrxETH(
-        address source,
-        uint256 amount
-    )
-        external
-        onlyOwner
-        returns (uint256 recieved)
-    {
+    function depositfrxETH(address source, uint256 amount) external onlyOwner {
         IERC20 frxETH = $frxETHMinter.frxETHToken();
         IsfrxETH sfrxETH = $frxETHMinter.sfrxETHToken();
 
@@ -57,7 +50,7 @@ contract Vault is Owned {
 
         // deposit
         frxETH.approve(address(sfrxETH), amount);
-        recieved = sfrxETH.deposit(amount, address(this));
+        uint256 recieved = sfrxETH.deposit(amount, address(this));
         // TODO: why this this check required?
         // https://github.com/FraxFinance/frxETH-public/blob/master/src/frxETHMinter.sol#L79
         require(recieved > 0, "No sfrxETH was returned");
@@ -70,25 +63,9 @@ contract Vault is Owned {
     }
 
     /// @dev withdraw a specific amount of frxETH from sfrxETH
-    function withdrawfrxETH(
-        address recipient,
-        uint256 amount
-    )
-        external
-        onlyOwner
-        returns (uint256 shares)
-    {
-        // forgefmt: disable-next-item
-        shares = $frxETHMinter
-            .sfrxETHToken()
-            .withdraw(amount, recipient, address(this));
-
-        // TODO: make sure this can't underflow somehow?
-        // could this contract own sfrxETH that it hasn't accounted for?
-        unchecked {
-            $reserve -= amount;
-        }
-
+    function withdrawfrxETH(address recipient, uint256 amount) external onlyOwner {
+        $frxETHMinter.sfrxETHToken().withdraw(amount, recipient, address(this));
+        $reserve -= amount;
         _invariant();
     }
 

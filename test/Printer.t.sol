@@ -26,7 +26,7 @@ contract PrinterTest is Test, WithStickers {
 
     function test_canPrintWithValidId() public {
         uint256[] memory ids =
-            _ids(StickerLib.attach(VALID_TIER, VALID_ID, VALID_SALT, address(printer)));
+            _ids(StickerLib.press(VALID_TIER, VALID_ID, VALID_SALT, address(printer)));
         _print(address(1), ids, amounts, "");
         assertEq(stickers.balanceOf(address(1), ids[0]), amounts[0]);
     }
@@ -34,7 +34,7 @@ contract PrinterTest is Test, WithStickers {
     function test_cannotPrintWithInvalidTier() public {
         _assertCannotPrint(
             address(1),
-            _ids(StickerLib.attach(MAX_TIER + 1, VALID_ID, VALID_SALT, address(printer))),
+            _ids(StickerLib.press(MAX_TIER + 1, VALID_ID, VALID_SALT, address(printer))),
             amounts,
             "",
             MockPrinter.InvalidTier.selector
@@ -44,7 +44,7 @@ contract PrinterTest is Test, WithStickers {
     function test_cannotPrintWithInvalidId() public {
         _assertCannotPrint(
             address(1),
-            _ids(StickerLib.attach(VALID_TIER, MAX_ID + 1, VALID_SALT, address(printer))),
+            _ids(StickerLib.press(VALID_TIER, MAX_ID + 1, VALID_SALT, address(printer))),
             amounts,
             "",
             MockPrinter.InvalidId.selector
@@ -54,7 +54,7 @@ contract PrinterTest is Test, WithStickers {
     function test_cannotPrintWithInvalidSalt() public {
         _assertCannotPrint(
             address(1),
-            _ids(StickerLib.attach(VALID_TIER, VALID_ID, "invalid", address(printer))),
+            _ids(StickerLib.press(VALID_TIER, VALID_ID, "invalid", address(printer))),
             amounts,
             "",
             MockPrinter.InvalidSalt.selector

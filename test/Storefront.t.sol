@@ -3,14 +3,19 @@ pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
 
+import {IERC20Permit} from "openzeppelin/token/ERC20/extensions/IERC20Permit.sol";
+
+import {StickerLib} from "../src/StickerLib.sol";
 import {WithStickers} from "./helpers/WithStickers.sol";
 import {SigUtils} from "./helpers/SigUtils.sol";
-import {IERC20Permit} from "openzeppelin/token/ERC20/extensions/IERC20Permit.sol";
 
 contract StorefrontTest is Test, WithStickers {
     uint256[] EXAMPLE_IDS = [_tier(0), _tier(1), _tier(2), _tier(3), _tier(4)];
     uint256[] EXAMPLE_AMOUNTS = [1, 2, 3, 4, 5];
     uint256 EXPECTED_BACKING_AMOUNT = 5.4321 ether;
+
+    uint256[] UNOWNED_IDS = [StickerLib.press(0, 2, "salt", address(MINIMAL_PRINTER))];
+    uint256[] UNOWNED_AMOUNTS = [1];
 
     address minter = address(1);
 
@@ -100,5 +105,35 @@ contract StorefrontTest is Test, WithStickers {
             EXAMPLE_IDS, EXAMPLE_AMOUNTS, "", total,
             permit.deadline, v, r, s
         );
+    }
+
+    // burning
+
+    function test_stick() public {
+        (, uint256 deposit,) = _print(minter, EXAMPLE_IDS, EXAMPLE_AMOUNTS, "");
+
+        // NOTE: necesssary because of rounding issue related to assets and shares
+        vm.warp(block.timestamp + 1);
+
+        uint256 prevBalance = MAINNET_MINTER.frxETHToken().balanceOf(minter);
+        _stick(minter, EXAMPLE_IDS, EXAMPLE_AMOUNTS);
+
+        // should get the deposit back as frxETH
+        assertEq(
+            stdMath.delta(prevBalance, MAINNET_MINTER.frxETHToken().balanceOf(minter)), deposit
+        );
+
+        // the vault should now have 0 reserve
+        _assertVaultReserve(0);
+    }
+
+    function testRevert_stickUnowned() public {
+        vm.expectRevert(); // Reason: Arithmetic over/underflow
+        _stick(minter, UNOWNED_IDS, UNOWNED_AMOUNTS);
+
+        _print(minter, EXAMPLE_IDS, EXAMPLE_AMOUNTS, "");
+
+        vm.expectRevert(); // Reason: Arithmetic over/underflow
+        _stick(minter, UNOWNED_IDS, UNOWNED_AMOUNTS);
     }
 }

@@ -30,7 +30,7 @@ contract MerklePrinterTest is Test, WithStickers {
         proof = m.getProof(data, 0);
 
         merklePrinter = new MerklePrinter(root);
-        ids = [StickerLib.attach(0, 1, 0, address(merklePrinter))];
+        ids = [StickerLib.press(0, 1, 0, address(merklePrinter))];
     }
 
     function test_canPrintValidProof() public {

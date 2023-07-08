@@ -26,7 +26,7 @@ contract StickerLibTest is Test {
         bytes8 salt = "hello";
         address printer = address(1);
 
-        uint256 tokenId = StickerLib.attach(tier, id, salt, printer);
+        uint256 tokenId = StickerLib.press(tier, id, salt, printer);
         _assertPeel(tokenId, tier, id, salt, printer);
     }
 

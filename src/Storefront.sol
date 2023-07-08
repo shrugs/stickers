@@ -30,6 +30,8 @@ contract Storefront {
         $stickers = new Stickers();
     }
 
+    // printing
+
     function printWithPermit(
         uint256[] calldata ids,
         uint256[] calldata amounts,
@@ -74,42 +76,20 @@ contract Storefront {
         _print(msg.sender, ids, amounts, data);
     }
 
-    function _sustain(address sender, address receiver, uint256 amount) internal {
-        if (msg.value != 0) {
-            // ETH
-            SafeTransferLib.safeTransferETH(receiver, amount);
-        } else {
-            // frxETH
-            // no need to check return value, frxETH is a reverting ERC20
-            $vault.$frxETHMinter().frxETHToken().transferFrom(sender, receiver, amount);
-        }
+    // sticking
+
+    /**
+     * @notice burns `amounts` of `ids`, redeeming the reserved frxETH
+     * @dev in v0.1 this is simply called by the user wishing to burn
+     * in v1.0, this would be announced by a trusted L2 contract
+     */
+    function stick(uint256[] calldata ids, uint256[] calldata amounts) public {
+        (uint256 deposit,) = validateAndCalculateDeposit(ids, amounts);
+        $stickers.burn(msg.sender, ids, amounts);
+        $vault.withdrawfrxETH(msg.sender, deposit);
     }
 
-    function _deposit(address from, uint256 amount) internal {
-        if (msg.value != 0) {
-            // ETH
-            $vault.depositETH{value: amount}();
-        } else {
-            // frxETH
-            IERC20 frxETHToken = $vault.$frxETHMinter().frxETHToken();
-            frxETHToken.transferFrom(from, address(this), amount);
-            frxETHToken.approve(address($vault), amount);
-            $vault.depositfrxETH(address(this), amount);
-        }
-    }
-
-    function _print(
-        address recipient,
-        uint256[] calldata ids,
-        uint256[] calldata amounts,
-        bytes calldata data
-    )
-        internal
-    {
-        // TODO: this calls the 1155 batchMint callback, ensure no reentrancy bugs lol
-        // mint the ids to the recipient
-        $stickers.mint(recipient, ids, amounts, data);
-    }
+    // validation / calculations
 
     function validateAndCalculatePrintingCost(
         uint256[] calldata ids,
@@ -167,5 +147,44 @@ contract Storefront {
 
         // invariant: printer must identify as printer
         if (!PrinterLib.validate(printer)) revert InvalidPrinter(printer);
+    }
+
+    // Internals
+
+    function _sustain(address sender, address receiver, uint256 amount) internal {
+        if (msg.value != 0) {
+            // ETH
+            SafeTransferLib.safeTransferETH(receiver, amount);
+        } else {
+            // frxETH
+            // no need to check return value, frxETH is a reverting ERC20
+            $vault.$frxETHMinter().frxETHToken().transferFrom(sender, receiver, amount);
+        }
+    }
+
+    function _deposit(address from, uint256 amount) internal {
+        if (msg.value != 0) {
+            // ETH
+            $vault.depositETH{value: amount}();
+        } else {
+            // frxETH
+            IERC20 frxETHToken = $vault.$frxETHMinter().frxETHToken();
+            frxETHToken.transferFrom(from, address(this), amount);
+            frxETHToken.approve(address($vault), amount);
+            $vault.depositfrxETH(address(this), amount);
+        }
+    }
+
+    function _print(
+        address recipient,
+        uint256[] calldata ids,
+        uint256[] calldata amounts,
+        bytes calldata data
+    )
+        internal
+    {
+        // TODO: this calls the 1155 batchMint callback, ensure no reentrancy bugs lol
+        // mint the ids to the recipient
+        $stickers.mint(recipient, ids, amounts, data);
     }
 }

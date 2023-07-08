@@ -31,7 +31,7 @@ abstract contract WithStickers is Test {
 
     /// @notice generates a tokenId with a specified tier and
     function _tier(uint8 tier) internal view returns (uint256) {
-        return StickerLib.attach(tier, 1, "salt", address(MINIMAL_PRINTER));
+        return StickerLib.press(tier, 1, "salt", address(MINIMAL_PRINTER));
     }
 
     function _print(
@@ -62,6 +62,11 @@ abstract contract WithStickers is Test {
         storefront.print{value: value}(ids, amounts, data);
     }
 
+    function _stick(address from, uint256[] memory ids, uint256[] memory amounts) internal {
+        vm.prank(from);
+        storefront.stick(ids, amounts);
+    }
+
     function _assertCannotPrint(
         address to,
         uint256[] memory ids,
@@ -81,10 +86,10 @@ abstract contract WithStickers is Test {
         assertEq(vault.$reserve(), amount);
 
         // the vault should be able to redeem that amount of frxETH (_invariant checks this but...)
-        assertApproxEqAbs(_frxETHBalanceOf(address(vault)), amount, 0.0001 ether);
+        assertApproxEqAbs(_redeemablefrxETHOf(address(vault)), amount, 0.0001 ether);
     }
 
-    function _frxETHBalanceOf(address owner) internal returns (uint256) {
+    function _redeemablefrxETHOf(address owner) internal returns (uint256) {
         return MAINNET_MINTER.sfrxETHToken().previewRedeem(
             MAINNET_MINTER.sfrxETHToken().balanceOf(owner)
         );
