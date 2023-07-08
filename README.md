@@ -72,12 +72,10 @@ sticker printers are sticker implementation contracts, primarily responsible for
 sticker printers abide by the following interfaces
 - `IERC1155MetadataURI` — (`uri(...)`)
 - `IERC2981` — (`royaltyInfo(...)`)
-- `IPrinter` — hooks for defining sticker behavior
-
-```solidity
-TODO: IPrinter interface here
-```
-
+- `IPrinter`
+  - `primarySaleInfo(...)`
+  - `onBeforeMint`
+  - `onAfterBurn`
 
 ### Stick Together, The DAO
 
@@ -89,10 +87,17 @@ if not possible to be done automatically, need to inject some humans :(
 - proactive grant distribution, nouns-style
 - veTokenomics w/ guage voting to redirect vault yield per-epoch
 
-
 ### subsidized transactions
 
 the Sticker chain is operated by Stick Together, which is a paymaster for known transaction types on the OP chain, effectively providing free transactions for all sticker-related operations, especially transfers and distributions.
+
+### storefronts
+
+storefronts
+
+TODO: finders fees
+
+can support counterfactual printers / sticker packs — just calculate the CREATE2 address of the printer and you'll know your token ids, etc.
 
 ### mvp
 
@@ -100,24 +105,27 @@ v0.1 — the protocol is first developed as a single-chain hyperstructure
 
 v1.0 — cross-chain messaging & dedicated OP Stack operated by Stick Together w/ account-abstracted subsidized txs
 
+with the split-chain v1.0, minting-related logic (gating, total supply, etc) will live on mainnet and we want display/trading (uri, royalty info, etc) logic available on the sidechain — do we use deterministic deploys to deploy the same `IPrinter` on each chain? allows for easy message passing
+
 ## todo
 
-- [ ] implement sticker burning with 1155 transfer data
+- [ ] onAfterBurn
+  - example max supply printer that uses onBeforeMint and onAfterBurn to calculate max supply
+  - example printer that uses max supply to charge incrementing amounts per-sticker
+    - use LSSVM's Curve contracts?
+- [ ] implement sticker burning (with 1155 transfer data?)
 - [ ] optimize storage slots / variable sizing
+- [ ] security pass
 - [ ] use a static delegate call to perform sticker logics? only if we never need a hook to persist state.
   - https://github.com/dragonfly-xyz/useful-solidity-patterns/tree/main/patterns/readonly-delegatecall#read-only-delegatecall
   - https://github.com/PartyDAO/party-protocol/blob/71714262eb59daeac06e561d03d05f3c5178e9d8/contracts/crowdfund/CrowdfundNFT.sol#L104
 - [ ] include a totalSupply per tokenId
+  - `totalSupplyOf` hook on printers?
   - [ ] could use the read only delegate idea to optionally get a maxSupply from impl contract allowing for 1/1 specifications
 - [ ] storefront contract
-  - [ ] hook-based logic for implementers
+  - [x] hook-based logic for implementers
   - [x] CREATE2-style deterministic token ids? allows for counterfactual listings
-  - [ ] unowned
-  - [ ] is it the job of the ui to verify that a sticker is saleable?
-  - [ ] security?
-- [ ] vault contract that the storefront(?) can mint/burn from
-- [ ] in the split-chain future we want minting-related logic (gating, total supply, etc) to be on mainnet and we want display/trading (uri, royalty info, etc) logic available on the sidechain
-- [ ] replace ERC165Checker with something more gas efficient
+- [ ] replace ERC165Checker with something more gas efficient?
 
 can we encode information into the tokenId? 256 bits = 32 bytes, addresses are 20 bytes
 so we have 12 left over. 1 for the tier, (really only 3 bits needed), then some space for the salt?
