@@ -40,18 +40,31 @@ contract Stickers is ERC1155, Owned {
         }
 
         _batchMint(to, ids, amounts, data);
-        // IPrinter(printer).onAfterPrint(recipient, ids, amounts, data);
     }
 
     function burn(
         address from,
-        uint256[] memory ids,
-        uint256[] memory amounts
+        uint256[] calldata ids,
+        uint256[] calldata amounts,
+        bytes calldata data
     )
         external
         onlyOwner
     {
-        return _batchBurn(from, ids, amounts);
+        _batchBurn(from, ids, amounts);
+
+        // [0] is safe because of 0 length check in Storefront
+        // printer is guaranteed to be identical for all tokenIds
+        (,,, address printer) = StickerLib.peel(ids[0]);
+
+        if (PrinterLib.shouldCallOnAfterStick(printer)) {
+            if (
+                IPrinter(printer).onAfterStick(from, ids, amounts, data)
+                    != IPrinter.onAfterStick.selector
+            ) {
+                revert InvalidPrinterResponse();
+            }
+        }
     }
 
     function uri(uint256 tokenId) public view virtual override returns (string memory) {

@@ -19,22 +19,35 @@ import {ERC165} from "openzeppelin/utils/introspection/ERC165.sol";
 abstract contract BasePrinter is IPrinter, ERC165 {
     error NotImplemented();
 
+    /**
+     * @dev See {IPrinter-onBeforePrint}.
+     */
     function onBeforePrint(
-        address to,
-        uint256[] calldata ids,
-        uint256[] calldata amounts,
-        bytes calldata data
+        address,
+        uint256[] calldata,
+        uint256[] calldata,
+        bytes calldata
     )
         external
-        view
         virtual
         returns (bytes4)
     {
-        ids;
-        amounts;
-        to;
-        data;
+        revert NotImplemented();
+    }
 
+    /**
+     * @dev See {IPrinter-onAfterStick}.
+     */
+    function onAfterStick(
+        address,
+        uint256[] calldata,
+        uint256[] calldata,
+        bytes calldata
+    )
+        external
+        virtual
+        returns (bytes4)
+    {
         revert NotImplemented();
     }
 

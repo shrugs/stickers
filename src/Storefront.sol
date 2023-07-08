@@ -83,9 +83,15 @@ contract Storefront {
      * @dev in v0.1 this is simply called by the user wishing to burn
      * in v1.0, this would be announced by a trusted L2 contract
      */
-    function stick(uint256[] calldata ids, uint256[] calldata amounts) public {
+    function stick(
+        uint256[] calldata ids,
+        uint256[] calldata amounts,
+        bytes calldata data
+    )
+        public
+    {
         (uint256 deposit,) = validateAndCalculateDeposit(ids, amounts);
-        $stickers.burn(msg.sender, ids, amounts);
+        $stickers.burn(msg.sender, ids, amounts, data);
         $vault.withdrawfrxETH(msg.sender, deposit);
     }
 

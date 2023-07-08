@@ -63,8 +63,19 @@ abstract contract WithStickers is Test {
     }
 
     function _stick(address from, uint256[] memory ids, uint256[] memory amounts) internal {
+        _stick(from, ids, amounts, "");
+    }
+
+    function _stick(
+        address from,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    )
+        internal
+    {
         vm.prank(from);
-        storefront.stick(ids, amounts);
+        storefront.stick(ids, amounts, data);
     }
 
     function _assertCannotPrint(

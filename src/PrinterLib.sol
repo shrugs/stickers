@@ -11,6 +11,10 @@ library PrinterLib {
         return printer.supportsInterface(IPrinter.onBeforePrint.selector);
     }
 
+    function shouldCallOnAfterStick(address printer) public view returns (bool) {
+        return printer.supportsInterface(IPrinter.onAfterStick.selector);
+    }
+
     /// @notice checks whether a given contract supportsInterface(IPrinter)
     function validate(address printer) public view returns (bool) {
         return printer.supportsInterface(type(IPrinter).interfaceId);

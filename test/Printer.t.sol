@@ -8,7 +8,11 @@ import {WithStickers} from "./helpers/WithStickers.sol";
 import {StickerLib} from "../src/StickerLib.sol";
 
 contract PrinterTest is Test, WithStickers {
+    event Stuck(address from, uint256[] ids, uint256[] amounts, bytes data);
+
     MockPrinter printer;
+
+    address minter = address(1);
 
     uint8 MAX_TIER = 2;
     uint8 VALID_TIER = 0;
@@ -27,13 +31,13 @@ contract PrinterTest is Test, WithStickers {
     function test_canPrintWithValidId() public {
         uint256[] memory ids =
             _ids(StickerLib.press(VALID_TIER, VALID_ID, VALID_SALT, address(printer)));
-        _print(address(1), ids, amounts, "");
-        assertEq(stickers.balanceOf(address(1), ids[0]), amounts[0]);
+        _print(minter, ids, amounts, "");
+        assertEq(stickers.balanceOf(minter, ids[0]), amounts[0]);
     }
 
     function test_cannotPrintWithInvalidTier() public {
         _assertCannotPrint(
-            address(1),
+            minter,
             _ids(StickerLib.press(MAX_TIER + 1, VALID_ID, VALID_SALT, address(printer))),
             amounts,
             "",
@@ -43,7 +47,7 @@ contract PrinterTest is Test, WithStickers {
 
     function test_cannotPrintWithInvalidId() public {
         _assertCannotPrint(
-            address(1),
+            minter,
             _ids(StickerLib.press(VALID_TIER, MAX_ID + 1, VALID_SALT, address(printer))),
             amounts,
             "",
@@ -53,12 +57,23 @@ contract PrinterTest is Test, WithStickers {
 
     function test_cannotPrintWithInvalidSalt() public {
         _assertCannotPrint(
-            address(1),
+            minter,
             _ids(StickerLib.press(VALID_TIER, VALID_ID, "invalid", address(printer))),
             amounts,
             "",
             MockPrinter.InvalidSalt.selector
         );
+    }
+
+    function test_onAfterStick() public {
+        uint256[] memory ids =
+            _ids(StickerLib.press(VALID_TIER, VALID_ID, VALID_SALT, address(printer)));
+        _print(minter, ids, amounts, "");
+        vm.warp(block.timestamp + 1); // for rounding, see Vault.sol
+
+        vm.expectEmit(true, true, true, true);
+        emit Stuck(minter, ids, amounts, "data");
+        _stick(minter, ids, amounts, "data");
     }
 
     function _ids(uint256 tokenId) internal pure returns (uint256[] memory) {

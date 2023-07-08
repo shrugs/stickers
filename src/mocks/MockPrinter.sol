@@ -9,6 +9,9 @@ import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 import {IPrinter} from "../interfaces/IPrinter.sol";
 
 contract MockPrinter is BasePrinter {
+    event Printed(address to, uint256[] ids, uint256[] amounts, bytes data);
+    event Stuck(address from, uint256[] ids, uint256[] amounts, bytes data);
+
     error InvalidTier();
     error InvalidId();
     error InvalidSalt();
@@ -26,13 +29,12 @@ contract MockPrinter is BasePrinter {
     }
 
     function onBeforePrint(
-        address,
+        address to,
         uint256[] calldata ids,
-        uint256[] calldata,
-        bytes calldata
+        uint256[] calldata amounts,
+        bytes calldata data
     )
         external
-        view
         override
         returns (bytes4)
     {
@@ -49,7 +51,24 @@ contract MockPrinter is BasePrinter {
             if (salt != SALT) revert InvalidSalt();
         }
 
+        emit Printed(to, ids, amounts, data);
+
         return IPrinter.onBeforePrint.selector;
+    }
+
+    function onAfterStick(
+        address from,
+        uint256[] calldata ids,
+        uint256[] calldata amounts,
+        bytes calldata data
+    )
+        external
+        override
+        returns (bytes4)
+    {
+        emit Stuck(from, ids, amounts, data);
+
+        return IPrinter.onAfterStick.selector;
     }
 
     function primarySaleInfo(
@@ -95,6 +114,7 @@ contract MockPrinter is BasePrinter {
         // forgefmt: disable-next-item
         return
             interfaceId == IPrinter.onBeforePrint.selector ||
+            interfaceId == IPrinter.onAfterStick.selector ||
             super.supportsInterface(interfaceId);
     }
 }

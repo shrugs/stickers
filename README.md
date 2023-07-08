@@ -109,13 +109,14 @@ with the split-chain v1.0, minting-related logic (gating, total supply, etc) wil
 
 ## todo
 
-- [ ] throw reentrancy guard on Storefront?
+- [ ] onAfterStick throwing would disallow burning in v0.1 but is really annoying problem in v1.0
+- [ ] enable multicalls so people can stick from multiple printers at once
+- [ ] put reentrancy guard on Storefront actions?
 - [ ] replace msg.sender argument with a `from` argument in `Storefront#print(...)`?
 - [ ] onAfterBurn
   - example max supply printer that uses onBeforeMint and onAfterBurn to calculate max supply
   - example printer that uses max supply to charge incrementing amounts per-sticker
     - use LSSVM's Curve contracts?
-- [ ] implement sticker burning
 - [ ] optimize storage slots / variable sizing
 - [ ] security pass
 - [ ] use a static delegate call to perform sticker logics? only if we never need a hook to persist state.
@@ -124,36 +125,4 @@ with the split-chain v1.0, minting-related logic (gating, total supply, etc) wil
 - [ ] include a totalSupply per tokenId
   - `totalSupplyOf` hook on printers?
   - [ ] could use the read only delegate idea to optionally get a maxSupply from impl contract allowing for 1/1 specifications
-- [ ] storefront contract
-  - [x] hook-based logic for implementers
-  - [x] CREATE2-style deterministic token ids? allows for counterfactual listings
 - [ ] replace ERC165Checker with something more gas efficient?
-
-can we encode information into the tokenId? 256 bits = 32 bytes, addresses are 20 bytes
-so we have 12 left over. 1 for the tier, (really only 3 bits needed), then some space for the salt?
-
-the space allotted to an id is basically the max length of a pack? 24 bits = 16,777,216 which is more than enough
-
-so with this model tiers are managed by the protocol.
-one registers salt+printer (impl) with the protocol.
-ids are counterfactual — the protocol doesn't care, it just mints them
-
-printers, when asked for uri, will parse out the id and return metadata
-renderers will parse out tier to show status effects
-
-why is salt here? salt is here because we may want to use the same printer for multiple packs
-
-artists deploy printer contracts to configure the style/logic of their stickers
-
-
-
-if we pack printer addresses into the token id we don't need the registry though, right?
-yeah users just say "mint me these ids" and the storefront goes "ok"
-
-so
-
-could i have stickers be their own contracts? need to enforce minting rights, basically
-the invariant i want to enforce is that for every sticker minted, FEE frxETH ends up in a vault and staked
-so we want contracts to opt-in to say "i am a sticker" but also we need to enforce that invariant
-this feels stressful because we can't trust external code to do expected things.
-seems easier to use the hook. how does uniswap ensure that it's working with erc20s that do what it expects?

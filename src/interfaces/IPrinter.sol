@@ -20,13 +20,14 @@ interface IPrinter is IERC165, IERC2981 {
         external
         returns (bytes4);
 
-    // function onAfterMint(uint256[] ids, uint256[] amounts, address to);
-
-    // function onBeforeBurn(uint256[] ids, uint256[] amounts, address to);
-    // function onAfterBurn(uint256[] ids, uint256[] amounts, address to);
-
-    // function onBeforeTransfer(uint256[] ids, uint256[] amounts, address to);
-    // function onAfterTransfer(uint256[] ids, uint256[] amounts, address to);
+    function onAfterStick(
+        address from,
+        uint256[] calldata ids,
+        uint256[] calldata amounts,
+        bytes calldata data
+    )
+        external
+        returns (bytes4);
 
     /**
      * @notice provide primarySale information to the caller
