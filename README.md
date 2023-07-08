@@ -22,7 +22,7 @@ as non-fungible stores of frxETH, stickers have an _insane_ monetary premium and
 
 ### printing
 
-artists provide sticker packs for printing. when a pack they've designed is minted, they earn a fee (calculated as `20%` of imbue value).
+artists provide sticker packs for printing. when a pack they've designed is minted, they earn a fee (calculated by `IPrinter#primarySaleInfo(...)`).
 
 anyone can produce a sticker to be sold on any platform — they're just NFTs and follow the NFT Metadata standard. artists can use the full expressivity of solidity to restrict the supply of their stickers or how they're distributed.
 
@@ -44,6 +44,12 @@ using this model, an artist defines a pack of stickers by providing a `salt` and
 the purpose of the salt is to support multiple packs of stickers with a single `printer` implementation.
 
 because `id` is a `uint8`, the maximum number of unique sticker designs in any one given pack is `256`.
+
+### mint with ETH, frxETH, frxETH#permit()
+
+stickers can be minted with ETH and frxETH, and optionally with `permit()`
+
+because ETH <> frxETH goes through the swap facility, the protocol opts to forward the frxETH directly to artists who can swap it to their preferred currency independently
 
 ### sticker tiers
 
@@ -96,27 +102,22 @@ v1.0 — cross-chain messaging & dedicated OP Stack operated by Stick Together w
 
 ## todo
 
-- [ ] write example printers from BasePrinter
 - [ ] implement sticker burning with 1155 transfer data
 - [ ] optimize storage slots / variable sizing
 - [ ] use a static delegate call to perform sticker logics? only if we never need a hook to persist state.
   - https://github.com/dragonfly-xyz/useful-solidity-patterns/tree/main/patterns/readonly-delegatecall#read-only-delegatecall
   - https://github.com/PartyDAO/party-protocol/blob/71714262eb59daeac06e561d03d05f3c5178e9d8/contracts/crowdfund/CrowdfundNFT.sol#L104
-- [ ] test permit
-  - https://book.getfoundry.sh/tutorials/testing-eip712
 - [ ] include a totalSupply per tokenId
   - [ ] could use the read only delegate idea to optionally get a maxSupply from impl contract allowing for 1/1 specifications
-- [ ] integrate with frxETH#permit along with standard allowances
-- [ ] StickerPrinter hooks w/ trycatch
 - [ ] storefront contract
   - [ ] hook-based logic for implementers
   - [x] CREATE2-style deterministic token ids? allows for counterfactual listings
   - [ ] unowned
   - [ ] is it the job of the ui to verify that a sticker is saleable?
   - [ ] security?
-- [ ] shared 1155 contract
 - [ ] vault contract that the storefront(?) can mint/burn from
 - [ ] in the split-chain future we want minting-related logic (gating, total supply, etc) to be on mainnet and we want display/trading (uri, royalty info, etc) logic available on the sidechain
+- [ ] replace ERC165Checker with something more gas efficient
 
 can we encode information into the tokenId? 256 bits = 32 bytes, addresses are 20 bytes
 so we have 12 left over. 1 for the tier, (really only 3 bits needed), then some space for the salt?

@@ -30,6 +30,9 @@ contract MinimalPrinter is BasePrinter {
         view
         returns (address receiver, uint256 saleAmount)
     {
+        // or: flat rate per sticker like tokenIds.length * FEE_PER_PRINT
+        // or: per-tier rate with (uint8 tier,,,) StickerLib.peel(tokenIds[i])
+
         // 20% on top of deposit for primary printing sales
         return (ARTIST, FixedPointMathLib.mulWadUp(deposit, 20e16));
     }

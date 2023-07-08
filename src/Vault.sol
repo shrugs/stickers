@@ -39,7 +39,7 @@ contract Vault is Owned {
 
     /// @dev deposit a specific amount of frxETH from `source` into sfrxETH
     function depositfrxETH(
-        address from,
+        address source,
         uint256 amount
     )
         external
@@ -49,11 +49,11 @@ contract Vault is Owned {
         IERC20 frxETH = $frxETHMinter.frxETHToken();
         IsfrxETH sfrxETH = $frxETHMinter.sfrxETHToken();
 
+        // get the frxETH from the source
+        frxETH.transferFrom(source, address(this), amount);
+
         // allow the minter to take our frxETH
         frxETH.approve(address($frxETHMinter), amount);
-
-        // get the frxETH from the source
-        frxETH.transferFrom(from, address(this), amount);
 
         // deposit
         frxETH.approve(address(sfrxETH), amount);

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
+import {IERC20} from "forge-std/interfaces/IERC20.sol";
 import {IERC20Permit} from "openzeppelin/token/ERC20/extensions/IERC20Permit.sol";
 import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
 
@@ -59,15 +60,12 @@ contract Storefront {
         // tabulate deposit amount
         (uint256 deposit, address printer) = validateAndCalculateDeposit(ids, amounts);
 
-        // disallow printing from invalid printers
-        if (!PrinterLib.validate(printer)) revert InvalidPrinter(printer);
-
         // calculate artist primary sale amount
         (address receiver, uint256 primarySaleAmount) =
             IPrinter(printer).primarySaleInfo(ids, amounts, deposit);
 
-        // forward the appropriate amount to artist
-        SafeTransferLib.safeTransferETH(receiver, primarySaleAmount);
+        // forward primary sale amount
+        _sustain(msg.sender, receiver, primarySaleAmount);
 
         // deposit the backing frxETH
         _deposit(msg.sender, deposit);
@@ -76,15 +74,27 @@ contract Storefront {
         _print(msg.sender, ids, amounts, data);
     }
 
+    function _sustain(address sender, address receiver, uint256 amount) internal {
+        if (msg.value != 0) {
+            // ETH
+            SafeTransferLib.safeTransferETH(receiver, amount);
+        } else {
+            // frxETH
+            // no need to check return value, frxETH is a reverting ERC20
+            $vault.$frxETHMinter().frxETHToken().transferFrom(sender, receiver, amount);
+        }
+    }
+
     function _deposit(address from, uint256 amount) internal {
         if (msg.value != 0) {
             // ETH
-            // amount is checked in transfer
             $vault.depositETH{value: amount}();
         } else {
             // frxETH
-            // amount is checked in transfer
-            $vault.depositfrxETH(from, amount);
+            IERC20 frxETHToken = $vault.$frxETHMinter().frxETHToken();
+            frxETHToken.transferFrom(from, address(this), amount);
+            frxETHToken.approve(address($vault), amount);
+            $vault.depositfrxETH(address(this), amount);
         }
     }
 

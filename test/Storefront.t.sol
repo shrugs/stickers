@@ -4,6 +4,8 @@ pragma solidity ^0.8.20;
 import "forge-std/Test.sol";
 
 import {WithStickers} from "./helpers/WithStickers.sol";
+import {SigUtils} from "./helpers/SigUtils.sol";
+import {IERC20Permit} from "openzeppelin/token/ERC20/extensions/IERC20Permit.sol";
 
 contract StorefrontTest is Test, WithStickers {
     uint256[] EXAMPLE_IDS = [_tier(0), _tier(1), _tier(2), _tier(3), _tier(4)];
@@ -47,5 +49,56 @@ contract StorefrontTest is Test, WithStickers {
 
         (, uint256 deposit,) = _print(minter, _ids, _amounts, "");
         _assertVaultReserve(deposit);
+    }
+
+    function test_printWithfrxETH() public {
+        // calculate needed amount of frxETH
+        (uint256 total,,) =
+            storefront.validateAndCalculatePrintingCost(EXAMPLE_IDS, EXAMPLE_AMOUNTS);
+
+        // give frxETH
+        deal(address(MAINNET_MINTER.frxETHToken()), minter, total);
+
+        // approve storefront
+        vm.startPrank(minter);
+        MAINNET_MINTER.frxETHToken().approve(address(storefront), total);
+
+        // print the stickers with frxETH
+        storefront.print(EXAMPLE_IDS, EXAMPLE_AMOUNTS, "");
+        vm.stopPrank();
+    }
+
+    function test_printWithPermit() public {
+        uint256 ownerPrivateKey = 0xA11CE;
+        address owner = vm.addr(ownerPrivateKey);
+
+        IERC20Permit frxETH = IERC20Permit(address(MAINNET_MINTER.frxETHToken()));
+
+        // calculate needed amount of frxETH
+        (uint256 total,,) =
+            storefront.validateAndCalculatePrintingCost(EXAMPLE_IDS, EXAMPLE_AMOUNTS);
+
+        // deal owner that frxETH
+        deal(address(frxETH), owner, total);
+
+        // generate sig
+        SigUtils sigUtils = new SigUtils(frxETH.DOMAIN_SEPARATOR());
+        SigUtils.Permit memory permit = SigUtils.Permit({
+            owner: owner,
+            spender: address(storefront),
+            value: total,
+            nonce: frxETH.nonces(owner),
+            deadline: block.timestamp
+        });
+
+        bytes32 digest = sigUtils.getTypedDataHash(permit);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(ownerPrivateKey, digest);
+
+        vm.prank(owner);
+        // forgefmt: disable-next-item
+        storefront.printWithPermit(
+            EXAMPLE_IDS, EXAMPLE_AMOUNTS, "", total,
+            permit.deadline, v, r, s
+        );
     }
 }
