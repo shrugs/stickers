@@ -109,14 +109,12 @@ with the split-chain v1.0, minting-related logic (gating, total supply, etc) wil
 
 ## todo
 
+- [ ] vault invariant rounding issue?
+- [ ] how to distribute vault rewards?
 - [ ] onAfterStick throwing would disallow burning in v0.1 but is really annoying problem in v1.0
 - [ ] enable multicalls so people can stick from multiple printers at once
 - [ ] put reentrancy guard on Storefront actions?
 - [ ] replace msg.sender argument with a `from` argument in `Storefront#print(...)`?
-- [ ] onAfterBurn
-  - example max supply printer that uses onBeforeMint and onAfterBurn to calculate max supply
-  - example printer that uses max supply to charge incrementing amounts per-sticker
-    - use LSSVM's Curve contracts?
 - [ ] optimize storage slots / variable sizing
 - [ ] security pass
 - [ ] use a static delegate call to perform sticker logics? only if we never need a hook to persist state.

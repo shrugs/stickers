@@ -22,8 +22,8 @@ contract MinimalPrinter is BasePrinter {
     }
 
     function primarySaleInfo(
-        uint256[] memory,
-        uint256[] memory,
+        uint256[] calldata,
+        uint256[] calldata,
         uint256 deposit
     )
         external

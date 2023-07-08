@@ -19,9 +19,9 @@ contract Stickers is ERC1155, Owned {
 
     function mint(
         address to,
-        uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
+        uint256[] calldata ids,
+        uint256[] calldata amounts,
+        bytes calldata data
     )
         external
         onlyOwner

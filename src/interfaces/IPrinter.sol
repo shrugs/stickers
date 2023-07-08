@@ -34,8 +34,8 @@ interface IPrinter is IERC165, IERC2981 {
      * @dev similar to royaltyInfo
      */
     function primarySaleInfo(
-        uint256[] memory ids,
-        uint256[] memory amounts,
+        uint256[] calldata ids,
+        uint256[] calldata amounts,
         uint256 deposit
     )
         external
