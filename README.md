@@ -16,7 +16,7 @@ a sticker is an individual edition of an ERC1155 NFT living on a dedicated OP St
 
 as users react to their friends or creators around the web, the sticker NFTs are _transferred_, sending both meaning and money to another.
 
-as non-fungible stores of frxETH, stickers have an _insane_ monetary premium and yield from the sfrxETH is streamed to protocol participants (platforms, artists, and others).
+as non-fungible stores of frxETH, stickers have an _insane_ monetary premium and yield from the sfrxETH is streamed to protocol participants (platforms, artists, and others). additionally, any stickers minted with ETH facilitate the locking of frxETH behind the scenes.
 
 ## technical details
 
@@ -77,25 +77,26 @@ sticker printers abide by the following interfaces
   - `onBeforeMint`
   - `onAfterBurn`
 
-### Stick Together, The DAO
+### (v1.0) Stick Together, The DAO
 
-main question: how to automatically direct yield from vault?
-if not possible to be done automatically, need to inject some humans :(
+the sticker protocol should be a primitive, and as governance-minimized as possible, but i can't think of a way to efficiently and fairly distribute yield from the vault to protocol participants that isn't prey to sybil attacks or gamification.
+
+the solution is to inject some human verification into the mix and distribute rewards through a combination of:
 
 - retroactive subsidization of integrations
 - retroactive subsidization
 - proactive grant distribution, nouns-style
-- veTokenomics w/ guage voting to redirect vault yield per-epoch
 
-### subsidized transactions
+for v0.1, the 'dao' is just a multisig that can claim and direct yield from the sfrxETH Vault.
+in v1.0, one could consider veTokenomics w/ guage voting to redirect vault yield per-epoch
+
+### (v1.0) subsidized transactions
 
 the Sticker chain is operated by Stick Together, which is a paymaster for known transaction types on the OP chain, effectively providing free transactions for all sticker-related operations, especially transfers and distributions.
 
-### storefronts
+### (v1.0) marketplaces
 
-storefronts
-
-TODO: finders fees
+user-facing marketplaces for stickers can be incentivized with a claim on some % of the yield they facilitating locking per-epoch. this probably requires some sort of minimum-flow calculation, or otherwise requires stickers to be locked in the protocol per-epoch in order to measure yield distcretely, but there's something here.
 
 can support counterfactual printers / sticker packs — just calculate the CREATE2 address of the printer and you'll know your token ids, etc.
 
@@ -109,13 +110,13 @@ with the split-chain v1.0, minting-related logic (gating, total supply, etc) wil
 
 ## todo
 
-- [ ] vault invariant rounding issue?
+- [ ] vault invariant rounding issue? how many wei can it be off in practice?
 - [ ] how to distribute vault rewards?
-- [ ] onAfterStick throwing would disallow burning in v0.1 but is really annoying problem in v1.0
+- [ ] can i use ERC4626 re: yield vault?
 - [ ] enable multicalls so people can stick from multiple printers at once
 - [ ] put reentrancy guard on Storefront actions?
 - [ ] replace msg.sender argument with a `from` argument in `Storefront#print(...)`?
-- [ ] optimize storage slots / variable sizing
+- [ ] optimization pass for storage slots / variable sizing
 - [ ] security pass
 - [ ] use a static delegate call to perform sticker logics? only if we never need a hook to persist state.
   - https://github.com/dragonfly-xyz/useful-solidity-patterns/tree/main/patterns/readonly-delegatecall#read-only-delegatecall
@@ -123,4 +124,5 @@ with the split-chain v1.0, minting-related logic (gating, total supply, etc) wil
 - [ ] include a totalSupply per tokenId
   - `totalSupplyOf` hook on printers?
   - [ ] could use the read only delegate idea to optionally get a maxSupply from impl contract allowing for 1/1 specifications
-- [ ] replace ERC165Checker with something more gas efficient?
+- [ ] replace ERC165Checker with something more gas efficient
+  - especially because we know printers support EIP165 so we don't need to check for that in `shouldCall...`

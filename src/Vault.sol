@@ -16,9 +16,6 @@ import {IsfrxETH} from "./interfaces/IsfrxETH.sol";
  */
 contract Vault is Owned {
     frxETHMinter public immutable $frxETHMinter;
-
-    // TODO: allow withdrawl of surplus frxETH to distributor/dao by tracking reserve
-    // TODO: align epochs w/ CRV?
     uint256 public $reserve;
 
     error WouldReduceReserve(uint256 expected, uint256 actual);

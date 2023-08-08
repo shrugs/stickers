@@ -9,8 +9,8 @@ import {StickerLib} from "./StickerLib.sol";
 import {PrinterLib} from "./PrinterLib.sol";
 
 /**
- * @dev the `owner` for mvp sake is the storefront but in reality will be a StickerMinter
- *     contract on the L2 which is in communication with the Storefront
+ * @notice the Stickers 1155
+ * @dev owned by Storefront who can mint/burn stickers
  */
 contract Stickers is ERC1155, Owned {
     error InvalidPrinterResponse();
@@ -68,9 +68,7 @@ contract Stickers is ERC1155, Owned {
     }
 
     function uri(uint256 tokenId) public view virtual override returns (string memory) {
-        // TODO: unpack id, call uri on printer
         (, uint8 id,, address printer) = StickerLib.peel(tokenId);
-        // TODO: trycatch
         return IPrinter(printer).uri(id);
     }
 }
